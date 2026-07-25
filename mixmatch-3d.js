@@ -146,7 +146,7 @@
     ctx.font = "700 64px Anton, Archivo, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("G", size / 2, size / 2 + 6);
+    ctx.fillText("F", size / 2, size / 2 + 6);
     const tex = new THREE.CanvasTexture(c);
     tex.encoding = THREE.sRGBEncoding;
     return tex;
@@ -389,7 +389,7 @@
       if (sole) soleMat.color.set(sole);
       if (strap) strapMat.color.set(strap);
     };
-    if (window.__glidePreviewColors) applyColors(window.__glidePreviewColors);
-    window.addEventListener("glide3d:colors", (e) => applyColors(e.detail));
+    if (window.__floopsPreviewColors) applyColors(window.__floopsPreviewColors);
+    window.addEventListener("floops3d:colors", (e) => applyColors(e.detail));
   }
 })();

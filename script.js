@@ -327,10 +327,10 @@ if (gsapReady && !prefersReducedMotion) {
     // 3D module bridge. mixmatch-3d.js is a module script (always deferred,
     // runs after this classic script), so the last-known value is stashed
     // on window in case the module initializes after this fires - it reads
-    // window.__glidePreviewColors on init, then subscribes to this event
+    // window.__floopsPreviewColors on init, then subscribes to this event
     // for everything after. Covers both load orders.
-    window.__glidePreviewColors = { sole: sole.hex, strap: strap.hex };
-    window.dispatchEvent(new CustomEvent("glide3d:colors", { detail: window.__glidePreviewColors }));
+    window.__floopsPreviewColors = { sole: sole.hex, strap: strap.hex };
+    window.dispatchEvent(new CustomEvent("floops3d:colors", { detail: window.__floopsPreviewColors }));
   };
 
   const canAnimate = () =>
