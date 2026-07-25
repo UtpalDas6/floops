@@ -192,7 +192,7 @@
     // top clears the dome PEAK with a real margin - not just past it, or
     // the badge sinks into the sole exactly where it should read as the
     // logo centerpiece.
-    const strapDepth = 24;
+    const strapDepth = 18;
     const strapBaseZ = 42;
     const strapGeo = new THREE.ExtrudeGeometry(buildStrapShape(), {
       depth: strapDepth,
