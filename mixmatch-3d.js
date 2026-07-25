@@ -377,7 +377,22 @@
       return raycaster.intersectObject(badgeHitMesh).length > 0;
     };
 
-    canvas.addEventListener("click", (e) => {
+    // Detect the tap from raw pointerdown/pointerup instead of a "click"
+    // listener: OrbitControls' touch handling calls preventDefault() on
+    // touchstart (needed to stop page-scroll/pinch-zoom from fighting the
+    // rotate gesture), and combined with this canvas's touch-action: none,
+    // that reliably suppresses the browser's synthesized click event after
+    // a touch - so a click listener never fires on real phones even though
+    // it works fine with a mouse.
+    let tapStart = null;
+    canvas.addEventListener("pointerdown", (e) => {
+      tapStart = { x: e.clientX, y: e.clientY };
+    });
+    canvas.addEventListener("pointerup", (e) => {
+      if (!tapStart) return;
+      const moved = Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y);
+      tapStart = null;
+      if (moved > 6) return; // a rotate drag, not a tap
       if (!hitsBadge(e.clientX, e.clientY)) return;
       detached = !detached;
       const gsapReady = typeof gsap !== "undefined";
