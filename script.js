@@ -399,6 +399,7 @@ if (gsapReady && !prefersReducedMotion) {
     // space past the last rendered loop.
     const maxY = SWATCH_H * (1 - 1);
     const minY = SWATCH_H * (1 - (LOOPS * palette.length - 2));
+    const cycleHeight = SWATCH_H * palette.length;
     let dragging = false;
     let startClientY = 0;
     let startY = 0;
@@ -419,7 +420,21 @@ if (gsapReady && !prefersReducedMotion) {
 
     windowEl.addEventListener("pointermove", (e) => {
       if (!dragging) return;
-      const y = Math.min(maxY, Math.max(minY, startY + (e.clientY - startClientY)));
+      let y = startY + (e.clientY - startClientY);
+      // Wrap by a full palette cycle instead of clamping: the pattern
+      // repeats every cycleHeight, so this jump is visually seamless but
+      // keeps the pointer always in sync with the strip - clamping instead
+      // would freeze the strip at the edge while the pointer kept moving,
+      // creating a dead zone that had to be dragged back through before
+      // reverse direction did anything (the "not circular" bug).
+      while (y > maxY) {
+        y -= cycleHeight;
+        startY -= cycleHeight;
+      }
+      while (y < minY) {
+        y += cycleHeight;
+        startY += cycleHeight;
+      }
       if (canAnimate()) gsap.set(stripEl, { y });
       else stripEl.style.transform = `translateY(${y}px)`;
     });
