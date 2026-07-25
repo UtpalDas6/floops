@@ -1,6 +1,6 @@
 # Floops — loops for your foot
 
-**[floops.](https://utpaldas6.github.io/nike-slippers/)** The flip-flop hasn't changed in 3,000 years. We fixed that.
+**[floops.](https://utpaldas6.github.io/floops/)** The flip-flop hasn't changed in 3,000 years. We fixed that.
 
 ![status](https://img.shields.io/badge/status-first%20drop%20incoming-ff4d1c) ![vibe](https://img.shields.io/badge/vibe-ergonomic%20futurism-8891a3)
 
@@ -49,7 +49,7 @@ That's it. Three.js is loaded as a classic script specifically so the 3D preview
 
 ## Live
 
-**[utpaldas6.github.io/nike-slippers](https://utpaldas6.github.io/nike-slippers/)**
+**[utpaldas6.github.io/floops](https://utpaldas6.github.io/floops/)**
 
 ---
 
