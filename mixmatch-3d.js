@@ -281,6 +281,17 @@
     badgeMesh.position.set(0, 104, strapBaseZ + strapDepth + 3.5);
     group.add(badgeMesh);
 
+    // Bigger invisible tap target over the badge (visually a 20-radius
+    // circle is a tiny hit area, especially on touch) - transparent so it
+    // never renders, but Object3D.raycast still tests it since visible
+    // stays true.
+    const badgeHitGeo = new THREE.CircleGeometry(45, 24);
+    const badgeHitMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
+    const badgeHitMesh = new THREE.Mesh(badgeHitGeo, badgeHitMat);
+    badgeHitMesh.position.copy(badgeMesh.position);
+    badgeHitMesh.position.z += 0.5;
+    group.add(badgeHitMesh);
+
     // Lay the object down: shape-space Z (extrusion thickness) becomes
     // world Y (up), so it reads as a sole resting on a surface rather
     // than a flat icon facing the camera edge-on.
@@ -349,6 +360,50 @@
       idleTimer = setTimeout(() => {
         controls.autoRotate = !prefersReducedMotion();
       }, 2200);
+    });
+
+    // ---------- Modular snap: tap the F badge to unclip/reclip the strap ----------
+    // Demonstrates the real product mechanism (sole and strap snap apart at
+    // the badge) rather than just being a color visualizer.
+    const raycaster = new THREE.Raycaster();
+    const pointerNdc = new THREE.Vector2();
+    let detached = false;
+
+    const hitsBadge = (clientX, clientY) => {
+      const rect = canvas.getBoundingClientRect();
+      pointerNdc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      pointerNdc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointerNdc, camera);
+      return raycaster.intersectObject(badgeHitMesh).length > 0;
+    };
+
+    canvas.addEventListener("click", (e) => {
+      if (!hitsBadge(e.clientX, e.clientY)) return;
+      detached = !detached;
+      const gsapReady = typeof gsap !== "undefined";
+      if (gsapReady) {
+        gsap.killTweensOf(strapMesh.position);
+        gsap.killTweensOf(badgeMesh.scale);
+        gsap.to(badgeMesh.scale, { x: 1.25, y: 1.25, z: 1.25, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.out" });
+      }
+      if (detached) {
+        const target = { y: 88, z: strapBaseZ + 55 };
+        if (gsapReady) gsap.to(strapMesh.position, { ...target, duration: 0.5, ease: "back.out(1.8)" });
+        else strapMesh.position.set(strapMesh.position.x, target.y, target.z);
+      } else {
+        const target = { y: 104, z: strapBaseZ };
+        if (gsapReady) gsap.to(strapMesh.position, { ...target, duration: 0.55, ease: "elastic.out(1, 0.6)" });
+        else strapMesh.position.set(strapMesh.position.x, target.y, target.z);
+      }
+    });
+
+    // Pointer affordance: swap the grab cursor for a pointer while hovering
+    // the badge's tap target (only when not actively dragging - e.buttons
+    // stays 0 during a plain hover, letting CSS's :active grabbing rule win
+    // during a real drag).
+    canvas.addEventListener("pointermove", (e) => {
+      if (e.buttons !== 0) return;
+      canvas.style.cursor = hitsBadge(e.clientX, e.clientY) ? "pointer" : "";
     });
 
     // ---------- Resize ----------
