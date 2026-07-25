@@ -697,6 +697,13 @@ section {
   border-radius: var(--radius-media);
   background: var(--bg);
   mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.reel__window.is-dragging {
+  cursor: grabbing;
 }
 
 .reel__window::after {
@@ -713,6 +720,14 @@ section {
 
 .reel__strip {
   will-change: transform;
+}
+
+.reel__hint {
+  margin: -8px 0 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
 }
 
 .reel__swatch {

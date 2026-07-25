@@ -384,4 +384,74 @@ if (gsapReady && !prefersReducedMotion) {
       },
     });
   });
+
+  // ============================================================
+  // Drag-to-spin: each reel can also be dragged directly (mouse,
+  // touch, or pen) instead of only via the Spin button. Follows the
+  // pointer 1:1 while dragging, then snaps to the nearest swatch
+  // through the same applyReel() the button spin uses, so both
+  // paths animate and update state identically.
+  // ============================================================
+  const makeReelDraggable = (stripEl, palette, getIndex, onSettle) => {
+    const windowEl = stripEl.parentElement;
+    // Keep the strip a couple of swatches shy of its rendered ends
+    // (0..LOOPS*palette.length-1) so a drag can never reveal blank
+    // space past the last rendered loop.
+    const maxY = SWATCH_H * (1 - 1);
+    const minY = SWATCH_H * (1 - (LOOPS * palette.length - 2));
+    let dragging = false;
+    let startClientY = 0;
+    let startY = 0;
+
+    windowEl.addEventListener("pointerdown", (e) => {
+      if (spinBtn.disabled) return; // a button spin is already animating this strip
+      dragging = true;
+      try {
+        windowEl.setPointerCapture(e.pointerId);
+      } catch {
+        // Ignore - dragging still works via the window-level listeners below.
+      }
+      windowEl.classList.add("is-dragging");
+      startClientY = e.clientY;
+      startY = canAnimate() ? gsap.getProperty(stripEl, "y") : offsetFor(getIndex(), palette.length);
+      if (canAnimate()) gsap.killTweensOf(stripEl);
+    });
+
+    windowEl.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const y = Math.min(maxY, Math.max(minY, startY + (e.clientY - startClientY)));
+      if (canAnimate()) gsap.set(stripEl, { y });
+      else stripEl.style.transform = `translateY(${y}px)`;
+    });
+
+    const endDrag = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      windowEl.classList.remove("is-dragging");
+      try {
+        if (windowEl.hasPointerCapture(e.pointerId)) windowEl.releasePointerCapture(e.pointerId);
+      } catch {
+        // Ignore - capture may never have been acquired.
+      }
+      const y = canAnimate() ? gsap.getProperty(stripEl, "y") : offsetFor(getIndex(), palette.length);
+      const position = Math.round(1 - y / SWATCH_H);
+      const index = ((position % palette.length) + palette.length) % palette.length;
+      applyReel(stripEl, index, palette.length, {
+        animate: canAnimate(),
+        duration: 0.35,
+        onComplete: () => onSettle(index),
+      });
+    };
+    windowEl.addEventListener("pointerup", endDrag);
+    windowEl.addEventListener("pointercancel", endDrag);
+  };
+
+  makeReelDraggable(soleStripEl, SOLE_PALETTE, () => soleIndex, (index) => {
+    soleIndex = index;
+    updatePreview(SOLE_PALETTE[soleIndex], STRAP_PALETTE[strapIndex]);
+  });
+  makeReelDraggable(strapStripEl, STRAP_PALETTE, () => strapIndex, (index) => {
+    strapIndex = index;
+    updatePreview(SOLE_PALETTE[soleIndex], STRAP_PALETTE[strapIndex]);
+  });
 })();
